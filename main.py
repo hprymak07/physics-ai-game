@@ -4,8 +4,8 @@ import pygame
 
 # pygame setup
 pygame.init()
-screen_width, screen_height = 1250, 720
-screen = pygame.display.set_mode((screen_width, screen_height))
+w, h = 1250,720
+screen = pygame.display.set_mode((w, h))
 dt = 0
 
 # reset
@@ -17,7 +17,7 @@ dt = 0
 class Player:
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, 10, 10)
-        self.floor = [pygame.Rect(0, 370, 1250, 200)]
+        self.floor = pygame.Rect(0, 370, w, 200)
         self.objects_lvl_one = [
             pygame.Rect(100, 300, 100, 100),
             pygame.Rect(250, 220, 100, 25),
@@ -37,15 +37,15 @@ class Player:
     def draw_lvl(self):
         screen.fill("white") # background
         pygame.draw.rect(screen, 'red', player.rect) # Player
-        self.floor = pygame.draw.rect(screen, 'black', (0, 370, 1250, 200))
-        self.endpoint = pygame.draw.rect(screen, 'forestgreen', (1150, 90, 20, 20)) # End of the lvl
+        pygame.draw.rect(screen, 'black', (0, 370, w, 200))
+        pygame.draw.rect(screen, 'forestgreen', (1150, 90, 20, 20)) # End of the lvl
         for obj in self.objects_lvl_one: # platforms 
             pygame.draw.rect(screen, 'black', obj)
 
     def update(self, dt):
         keys = pygame.key.get_pressed()
         self.acc = self.gravity
-        list_in_use = self.objects_lvl_one + self.floor
+        list_in_use = self.objects_lvl_one + list(self.floor)
 
         for objects in list_in_use:
             if self.rect.colliderect(objects):
@@ -81,7 +81,7 @@ class Player:
         
         if player.rect.left <= 0:
            player.rect.x = 20
-        if player.rect.right >= screen_width:
+        if player.rect.right >= w:
            player.rect.x = 1220
     
     def is_game_over(self):
@@ -92,8 +92,7 @@ class Player:
       if player.rect.colliderect(self.floor):
           print("Game Over")
 
-
-player = Player(30, screen_height / 2)
+player = Player(30, h / 2)
 
 while True:
     for event in pygame.event.get():
