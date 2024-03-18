@@ -6,8 +6,6 @@ import pygame
 pygame.init()
 screen_width, screen_height = 1250, 720
 screen = pygame.display.set_mode((screen_width, screen_height))
-clock = pygame.time.Clock()
-running = True
 dt = 0
 
 # reset
@@ -37,7 +35,11 @@ class Player:
         self.acc = 0
 
     def draw_lvl(self):
-        for obj in self.objects_lvl_one:
+        screen.fill("white") # background
+        pygame.draw.rect(screen, 'red', player.rect) # Player
+        self.floor = pygame.draw.rect(screen, 'black', (0, 370, 1250, 200))
+        self.endpoint = pygame.draw.rect(screen, 'forestgreen', (1150, 90, 20, 20)) # End of the lvl
+        for obj in self.objects_lvl_one: # platforms 
             pygame.draw.rect(screen, 'black', obj)
 
     def update(self, dt):
@@ -76,31 +78,32 @@ class Player:
             self.rect.x += self.vel_x
         if keys[pygame.K_a]:
             self.rect.x -= self.vel_x
+        
+        if player.rect.left <= 0:
+           player.rect.x = 20
+        if player.rect.right >= screen_width:
+           player.rect.x = 1220
+    
+    def is_game_over(self):
+      if player.rect.colliderect(self.endpoint):
+        player.rect.x = 30
+        player.rect.y = 0
+        print("Game Over")
+      if player.rect.colliderect(self.floor):
+          print("Game Over")
 
-player1 = Player(30, screen_height / 2)
 
-while running:
+player = Player(30, screen_height / 2)
+
+while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            break
 
-    screen.fill("white")
-    pygame.draw.rect(screen, 'red', player1.rect)
-    pygame.draw.rect(screen, 'black', (0, 370, 1250, 200))
-    player1.draw_lvl()
-
-    if player1.rect.left <= 0:
-        player1.rect.x = 20
-    if player1.rect.right >= screen_width:
-        player1.rect.x = 1220
-
-    end1 = pygame.draw.rect(screen, 'forestgreen', (1150, 90, 20, 20))
-    if player1.rect.colliderect(end1):
-        player1.rect.x = 30
-        player1.rect.y = 0
+    player.draw_lvl()
 
     pygame.display.flip()
-    dt = clock.tick(60) / 1000
-    player1.update(dt)
+    dt = pygame.time.Clock().tick(60) / 1000
+    player.update(dt)
 
 pygame.quit()
