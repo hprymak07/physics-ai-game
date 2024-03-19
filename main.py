@@ -47,6 +47,7 @@ class Player:
         draw.rect(screen, 'forestgreen', (1150, 90, 20, 20)) # End of the lvl
         draw.rect(screen, 'red', player.rect) # Player
         draw.rect(screen, 'black', (0, 370, w, 200)) # floor
+        
     def update(self, dt):
         keys = key.get_pressed()
         self.acc = self.gravity
@@ -88,21 +89,24 @@ class Player:
            player.rect.x = 20
         if player.rect.right >= w:
            player.rect.x = w - self.rect.width
+
     def calc_score(self):
         player_distance = [self.rect.x - (self.rect.width / 2), self.rect.y - (self.rect.height / 2)]
         endpt_distance = [self.endpt.x - (self.endpt / 2), self.endpt.y - (self.endpt / 2)]
-        print(dist(player_distance, endpt_distance))
+        score = dist(player_distance, endpt_distance)
         quit()
     
-    def is_game_over(self):
+    def is_game_over(self):    
       if player.rect.colliderect(self.endpt):
         player.rect.x = 30
         player.rect.y = 0
         print("Game Over: endpt Hit")
         player.calc_score()
+
       if player.rect.colliderect(self.floor) and player.rect.x > 200:
           print("Game Over: Floor Hit")
           player.calc_score()
+
 player = Player(30, h / 2)
 
 while True:
