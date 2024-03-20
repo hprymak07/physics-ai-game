@@ -1,7 +1,8 @@
 import torch
-import numpy
+from numpy import np
 from collections import deque
-from main import Player
+from main import Player, point, calc_score as score,  game_over as danger
+from main import Direction, update as left, right, jump
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
 LR = 0.001
@@ -13,20 +14,43 @@ class Agent:
         self.epsilon = 0
         self.gamma = 0
         self.memory = deque(maxlen = MAX_MEMORY)
-        # MODEL AND TRAINER GO HERE
+
+        #passing in none so there is no error; will do later 
+        self.model = None
+        self.trainer = None
 
 
     def get_state(self, game):
-        pass
+        cube = game.player[0]
+        
+        point_l = point(cube.x - 18, cube.y)
+        point_r = point(cube.x + 18, cube.y)
+        
+
+        state = [
+            # locate danger
+            danger[0],
+            danger[1],
+            
+            #Move/ Keystrokes
+            left,
+            right,
+            jump,
+            
+            #calc the distance from itself and the endpoint
+            score
+        ]
+        return np.array(state, dtype=int)
     
     def remember(self, state, action, reward, next_state, done):
-        pass
+        # will pop left is max memory is exceeded
+        self.memory.append(state, action, reward, next_state, done)
     
     def train_long_memory(self):
         pass
     
     def train_short_memory(self, state, action, reward, next_state, done):
-        pass  
+        self.trainer.train_step(state, action, reward, next_state, done)  
     
     def get_action(self, state):
         pass
@@ -60,6 +84,6 @@ def train():
             if score > record:
                 record = score
                 #agent.model.save
-
+            
 if __name__ == '__main__':
     train()

@@ -1,21 +1,29 @@
 
-from pygame import init, quit, display, time, key, draw
-from pygame.event import Event, QUIT
-from pygame.locals import Rect, K_SPACE, K_d, K_a
+import pygame
+from pygame import init, display, time, key, draw
+from pygame import event
+from pygame.locals import Rect, K_SPACE, K_d, K_a, QUIT
 from math import dist
-
+from collections import namedtuple
 
 # pygame setup
 init()
 w, h = 1250,720
 screen = display.set_mode((w, h))
 dt = 0
+point = namedtuple('Point', 'x, y')
 
 # reset
 # reward
 # play(action) --> direction
 # game iteration
 # is_collision
+
+class Direction():
+
+    @staticmethod
+    def update():
+        return key.get_pressed()[K_a], key.get_pressed()[K_d], key.get_pressed()[K_SPACE]
 
 class Player:
     def __init__(self, x, y):
@@ -38,6 +46,12 @@ class Player:
         self.ground = False
         self.acc = 0
 
+    def reset(self):
+        self.current_pos = point(30, h / 2)
+        draw.rect(point, 10,10)
+        self.frame_iteration = 0
+        
+
     def draw_lvl(self):
         screen.fill((225, 225, 225)) # background
 
@@ -49,7 +63,8 @@ class Player:
         draw.rect(screen, 'black', (0, 370, w, 200)) # floor
         
     def update(self, dt):
-        keys = key.get_pressed()
+        left, right, jump = Direction.update()
+
         self.acc = self.gravity
         list_in_use = self.objects_lvl_one + [self.floor]
 
@@ -71,7 +86,7 @@ class Player:
                 else:
                     self.ground = False
 
-        if keys[K_SPACE] and self.ground:
+        if jump and self.ground:
             self.vel_y = -10
             self.acc = 0
             self.ground = False
@@ -80,9 +95,9 @@ class Player:
         self.rect.y += self.vel_y
         self.vel_x = 300 * dt
 
-        if keys[K_d]:
+        if right:
             self.rect.x += self.vel_x
-        if keys[K_a]:
+        if left:
             self.rect.x -= self.vel_x
         
         if player.rect.left <= 0:
@@ -92,30 +107,26 @@ class Player:
 
     def calc_score(self):
         player_distance = [self.rect.x - (self.rect.width / 2), self.rect.y - (self.rect.height / 2)]
-        endpt_distance = [self.endpt.x - (self.endpt / 2), self.endpt.y - (self.endpt / 2)]
-        score = dist(player_distance, endpt_distance)
-        quit()
+        endpt_distance = [self.endpt.x - (self.endpt.width / 2), self.endpt.y - (self.endpt.height / 2)]
+        distance = dist(player_distance, endpt_distance)
+        return distance
+    
     
     def is_game_over(self):    
-      if player.rect.colliderect(self.endpt):
-        player.rect.x = 30
-        player.rect.y = 0
-        print("Game Over: endpt Hit")
-        player.calc_score()
-
-      if player.rect.colliderect(self.floor) and player.rect.x > 200:
-          print("Game Over: Floor Hit")
-          player.calc_score()
+      game_over = [player.rect.colliderect(self.endpt), player.rect.colliderect(self.floor) and player.rect.x > 200]
+      return [player.calc_score() for i in game_over if game_over[i]]
 
 player = Player(30, h / 2)
 
+
 while True:
-    for event in event.get():
-        if event.type == QUIT:
+    for ev in event.get():
+        if ev.type == QUIT:
             break
 
     player.draw_lvl()
-    player.is_game_over()
+    player.is_game_over() 
+
 
     display.flip()
     dt = time.Clock().tick(60) / 1000
