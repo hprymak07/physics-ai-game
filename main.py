@@ -6,6 +6,9 @@ from pygame.locals import Rect, K_SPACE, K_d, K_a, QUIT
 from math import dist
 from collections import namedtuple
 
+from ctypes import POINTER, WINFUNCTYPE, windll
+from ctypes.wintypes import BOOL, HWND, RECT 
+
 # pygame setup
 init()
 w, h = 1250,720
@@ -18,6 +21,15 @@ point = namedtuple('Point', 'x, y')
 # play(action) --> direction
 # game iteration
 # is_collision
+def find_border_cords():
+  hwnd = display.get_wm_info()['window']
+  proto = WINFUNCTYPE(BOOL, HWND, POINTER(RECT))
+  paramflags = (1, 'hwnd'), (2, '1prect')
+  getwindowrect = proto(("GetWindowRect", windll.user32), paramflags)
+  sqr = getwindowrect(hwnd)
+  return sqr.top, sqr.left, sqr.bottom, sqr.right
+
+find_border_cords()
 
 class Direction():
 
@@ -27,8 +39,9 @@ class Direction():
 
 class Player:
     def __init__(self, x, y):
+        self.bdr_top, self.bdr_left, self.bdr_bottom, self.right = find_border_cords()
         self.rect = Rect(x, y, 10, 10)
-        self.floor = Rect(0, 370, w, 200)
+        self.floor = Rect(0, self.bdr_bottom, w, 200)
         self.endpt = Rect(1150, 90, 20, 20)
         self.objects_lvl_one = [
             Rect(100, 300, 100, 100),

@@ -1,4 +1,5 @@
 import torch
+import random
 from numpy import np
 from collections import deque
 from main import Player, point, calc_score as score,  game_over as danger
@@ -44,16 +45,35 @@ class Agent:
     
     def remember(self, state, action, reward, next_state, done):
         # will pop left is max memory is exceeded
-        self.memory.append(state, action, reward, next_state, done)
+        self.memory.append((state, action, reward, next_state, done))
     
     def train_long_memory(self):
-        pass
-    
+        if len(self.memory) > BATCH_SIZE:
+            sample = random.sample(self.memory, BATCH_SIZE)
+        else:
+            sample = self.memory
+
+        states, actions, rewards, next_states, dones = zip(*sample)
+
+        self.trainer.train_step(states, actions, rewards, next_states, dones)
+
+
     def train_short_memory(self, state, action, reward, next_state, done):
         self.trainer.train_step(state, action, reward, next_state, done)  
     
     def get_action(self, state):
-        pass
+        self.epsilon = 80 - n_games
+        final_action = [0,0,0]
+        if random.randint(0,200) < self.epsilon:
+            action = random.randint(0,2)
+            final_action[action] = 1
+        else:
+            state0 = torch.tensor(state, dtype = torch.float)
+            prediction = self.model.predict(state0)
+            action = torch.argmax(prediction).item()
+            final_action[action] = 1
+
+        return final_action
 
 def train():
     plot_scores = []
