@@ -1,6 +1,6 @@
 
 import pygame
-from pygame import init, display, time, key, draw
+from pygame import init, display, time, key, draw, image
 from pygame import event
 from pygame.locals import Rect, K_SPACE, K_d, K_a, QUIT
 from math import dist
@@ -21,6 +21,13 @@ point = namedtuple('Point', 'x, y')
 # play(action) --> direction
 # game iteration
 # is_collision
+
+
+
+
+
+
+
 def find_border_cords():
   hwnd = display.get_wm_info()['window']
   proto = WINFUNCTYPE(BOOL, HWND, POINTER(RECT))
@@ -41,17 +48,16 @@ class Player:
     def __init__(self, x, y):
         self.bdr_top, self.bdr_left, self.bdr_bottom, self.right = find_border_cords()
         self.rect = Rect(x, y, 10, 10)
-        self.floor = Rect(0, self.bdr_bottom, w, 200)
-        self.endpt = Rect(1150, 90, 20, 20)
+        self.floor = Rect(0, self.bdr_bottom - 20, w, 200)
+        self.endpt = Rect(1200, self.bdr_bottom - 250, 20, 20)
         self.objects_lvl_one = [
-            Rect(100, 300, 100, 100),
-            Rect(250, 220, 100, 25),
-            Rect(400, 150, 100, 25),
-            Rect(535, 150, 75, 25),
-            Rect(635, 170, 75, 25),
-            Rect(735, 150, 75, 25),
-            Rect(900, 130, 200, 25),
-            Rect(1150, 90, 20, 20)
+            Rect(100, self.bdr_bottom - 100, 100, 80),
+            Rect(250, self.bdr_bottom - 140, 100, 25),
+            Rect(400, self.bdr_bottom - 170, 100, 25),
+            Rect(535, self.bdr_bottom - 170, 75, 25),
+            Rect(735, self.bdr_bottom - 170, 75, 25),
+            Rect(900, self.bdr_bottom - 200, 150, 25),
+            Rect(1150, self.bdr_bottom - 230, 200, 25)
         ]
         self.collision_tol = 23
         self.vel_y = 0
@@ -66,14 +72,17 @@ class Player:
         
 
     def draw_lvl(self):
-        screen.fill((225, 225, 225)) # background
+        screen.fill((50,50,50)) # background
+        display.set_caption('Spritesheets')
 
+        sprite_sheet_image = image.load('slime_sprites.png').convert_alpha()
+        screen.blit(sprite_sheet_image, (0,0))
         for obj in self.objects_lvl_one: # platforms 
             draw.rect(screen, 'black', obj)
             
-        draw.rect(screen, 'forestgreen', (1150, 90, 20, 20)) # End of the lvl
+        draw.rect(screen, 'forestgreen', (1200, self.bdr_bottom - 250, 20, 20)) # End of the lvl
         draw.rect(screen, 'red', player.rect) # Player
-        draw.rect(screen, 'black', (0, 370, w, 200)) # floor
+        draw.rect(screen, 'black', (0, self.bdr_bottom - 20, w, 200)) # floor
         
     def update(self, dt):
         left, right, jump = Direction.update()

@@ -4,10 +4,12 @@ from numpy import np
 from collections import deque
 from main import Player, point, calc_score as score,  game_over as danger
 from main import Direction, update as left, right, jump
+from geoffrey_brain import Q_Net, Qtrainer
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
 LR = 0.001
 
+# https://www.youtube.com/watch?v=L8ypSXwyBds - video
 class Agent:
 
     def __init__(self):
@@ -16,9 +18,9 @@ class Agent:
         self.gamma = 0
         self.memory = deque(maxlen = MAX_MEMORY)
 
-        #passing in none so there is no error; will do later 
-        self.model = None
-        self.trainer = None
+         
+        self.model = Q_Net(11,256,3)
+        self.trainer = Qtrainer(self.model, lr = LR, gamma = self.gamma)
 
 
     def get_state(self, game):
@@ -62,7 +64,7 @@ class Agent:
         self.trainer.train_step(state, action, reward, next_state, done)  
     
     def get_action(self, state):
-        self.epsilon = 80 - n_games
+        self.epsilon = 80 - self.n_games
         final_action = [0,0,0]
         if random.randint(0,200) < self.epsilon:
             action = random.randint(0,2)
@@ -103,7 +105,7 @@ def train():
 
             if score > record:
                 record = score
-                #agent.model.save
+                agent.model.save
             
 if __name__ == '__main__':
     train()
