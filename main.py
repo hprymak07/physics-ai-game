@@ -1,6 +1,5 @@
 
-import pygame
-from pygame import init, display, time, key, draw, image
+from pygame import init, display, time, key, draw, image, transform
 from pygame import event
 from pygame.locals import Rect, K_SPACE, K_d, K_a, QUIT
 from math import dist
@@ -72,14 +71,26 @@ class Player:
         
 
     def draw_lvl(self):
-        screen.fill((50,50,50)) # background
-        display.set_caption('Spritesheets')
 
-        sprite_sheet_image = image.load('slime_sprites.png').convert_alpha()
-        screen.blit(sprite_sheet_image, (0,0))
+        screen.fill((50,50,50)) # background
+
+        # jungle_background = image.load('jungle_background.jpg')
+
+        # scale = max(w / jungle_background.get_width(), h / jungle_background.get_height())
+        # jungle_background = transform.scale(jungle_background, (int(jungle_background.get_width() * scale), int(jungle_background.get_height() * scale)))
+        # set_x = (w - jungle_background.get_width() // 2)
+        # set_y = (h - jungle_background.get_height() // 2)
+        # screen.blit(jungle_background, (set_x, set_y))
+        # print("Image: ", jungle_background.get_size())
+        # print("Screen: ", screen.get_size())
+        # print("Scale: ", scale)
+        # print("x,y", set_x, set_y)
+
+
+
         for obj in self.objects_lvl_one: # platforms 
             draw.rect(screen, 'black', obj)
-            
+        
         draw.rect(screen, 'forestgreen', (1200, self.bdr_bottom - 250, 20, 20)) # End of the lvl
         draw.rect(screen, 'red', player.rect) # Player
         draw.rect(screen, 'black', (0, self.bdr_bottom - 20, w, 200)) # floor

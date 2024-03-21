@@ -15,7 +15,7 @@ class Agent:
     def __init__(self):
         self.n_games = 0
         self.epsilon = 0
-        self.gamma = 0
+        self.gamma = 0.8 # Can be any number as long as it's lower than 1
         self.memory = deque(maxlen = MAX_MEMORY)
 
          
@@ -71,7 +71,7 @@ class Agent:
             final_action[action] = 1
         else:
             state0 = torch.tensor(state, dtype = torch.float)
-            prediction = self.model.predict(state0)
+            prediction = self.model(state0)
             action = torch.argmax(prediction).item()
             final_action[action] = 1
 
