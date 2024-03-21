@@ -35,8 +35,6 @@ def find_border_cords():
   sqr = getwindowrect(hwnd)
   return sqr.top, sqr.left, sqr.bottom, sqr.right
 
-find_border_cords()
-
 class Direction():
 
     @staticmethod
@@ -73,27 +71,16 @@ class Player:
     def draw_lvl(self):
 
         screen.fill((50,50,50)) # background
-
-        # jungle_background = image.load('jungle_background.jpg')
-
-        # scale = max(w / jungle_background.get_width(), h / jungle_background.get_height())
-        # jungle_background = transform.scale(jungle_background, (int(jungle_background.get_width() * scale), int(jungle_background.get_height() * scale)))
-        # set_x = (w - jungle_background.get_width() // 2)
-        # set_y = (h - jungle_background.get_height() // 2)
-        # screen.blit(jungle_background, (set_x, set_y))
-        # print("Image: ", jungle_background.get_size())
-        # print("Screen: ", screen.get_size())
-        # print("Scale: ", scale)
-        # print("x,y", set_x, set_y)
+        screen.blit(image.load('background.png'), (0,0)) # upload background
 
 
 
         for obj in self.objects_lvl_one: # platforms 
-            draw.rect(screen, 'black', obj)
+            draw.rect(screen, 'grey', obj)
         
         draw.rect(screen, 'forestgreen', (1200, self.bdr_bottom - 250, 20, 20)) # End of the lvl
         draw.rect(screen, 'red', player.rect) # Player
-        draw.rect(screen, 'black', (0, self.bdr_bottom - 20, w, 200)) # floor
+        draw.rect(screen, 'grey', (0, self.bdr_bottom - 20, w, 200)) # floor
         
     def update(self, dt):
         left, right, jump = Direction.update()
@@ -149,6 +136,9 @@ class Player:
       game_over = [player.rect.colliderect(self.endpt), player.rect.colliderect(self.floor) and player.rect.x > 200]
       return [player.calc_score() for i in game_over if game_over[i]]
 
+
+    def play_step(self, action):
+        self.frame_iteration += 1
 player = Player(30, h / 2)
 
 

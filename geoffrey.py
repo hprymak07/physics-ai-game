@@ -1,6 +1,6 @@
 import torch
 import random
-from numpy import np
+import numpy as np
 from collections import deque
 from main import Player, point, calc_score as score,  game_over as danger
 from main import Direction, update as left, right, jump
@@ -91,7 +91,8 @@ def train():
         # get move on current state
         final_move = agent.get_action(state_old)
 
-        # reward, done, score = game // ADD AI PLAY STUFF
+        reward, done, score = game.
+
         state_new = agent.get_state(game)
 
         #train short term memory
