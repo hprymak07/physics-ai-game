@@ -65,13 +65,3 @@ class Qtrainer:
         lose = self.optimizer(clone, pred_q)
         lose.backward()
         self.optimzier.step()
-        
-        
-        
-
-
-
-
-
-
-

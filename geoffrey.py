@@ -2,9 +2,10 @@ import torch
 import random
 import numpy as np
 from collections import deque
-from main import Player, point, calc_score as score,  game_over as danger
+from main import Game, point, calc_score as score,  game_over as danger
 from main import Direction, update as left, right, jump
 from geoffrey_brain import Q_Net, Qtrainer
+from plot import plot
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
 LR = 0.001
@@ -83,7 +84,7 @@ def train():
     total_score = 0
     record = 0
     agent = Agent()
-    game = Player
+    game = Game
     while True:
         # get old state / current
         state_old = agent.get_state(game)
@@ -91,7 +92,7 @@ def train():
         # get move on current state
         final_move = agent.get_action(state_old)
 
-        reward, done, score = game.
+        reward, done, score = game.step(final_move)
 
         state_new = agent.get_state(game)
 
@@ -107,6 +108,15 @@ def train():
             if score > record:
                 record = score
                 agent.model.save
-            
+            print('Game', agent.n_games, 'Score', score, 'Record:', record)
+
+            #Copied from video to test if he even works
+
+            plot_scores.append(score)
+            total_score += score
+            mean_score = total_score / agent.n_games
+            plot_mean_scores.append(mean_score)
+            plot(plot_scores, plot_mean_scores)
+
 if __name__ == '__main__':
     train()
