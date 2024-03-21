@@ -7,11 +7,7 @@ w, h = 1250, 720
 
 class Direction():
     @staticmethod
-    def update():
-        key = pygame.key.get_pressed()
-        left = key[pygame.K_a] 
-        right = key[pygame.K_d]
-        jump = key[pygame.K_SPACE]
+    def update(left, right, jump):
         return left, right, jump
     
 class Player:
@@ -51,7 +47,7 @@ class Game:
         self.player = Player()
         self.score = 1
         self.frame_iteration = 0
-  
+         
     def calc_score(self, neg):
         player_distance = [self.player.rect.x - (self.player.rect.width / 2), self.player.rect.y - (self.player.rect.height / 2)]
         endpt_distance = [self.endpt.x - (self.endpt.width / 2), self.endpt.y - (self.endpt.height / 2)]
@@ -65,27 +61,31 @@ class Game:
             self.score += 1
 
         return reward, game_over, self.score
-
-    def step(self, action):
+#
+    def step(self, action):      
         self.frame_iteration += 1
 
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-    
-        dt = self.clock.tick(60) / 1000
-        self.move(action, dt)
+
+        dt = self.clock.tick(60) / 1000        
         reward = 0
         game_over = False
+      
+        left, right, jump = action
+      
+        self.move(left, right, jump)
+      
         end = [self.player.rect.colliderect(self.endpt), self.player.rect.colliderect(self.floor) and self.player.rect.x > 200]
         [self.calc_score(True) for i in end if end[i]]
+        
         self._update()
 
-        return reward, game_over, self.score
+        return self.score
 
-    def move(self, action, dt):
-        left, right, jump = Direction.update()
+    def move(self, left, right, jump):
 
         self.acc = self.gravity
         list_in_use = self.objects_for_lvl + [self.floor]
@@ -108,20 +108,19 @@ class Game:
                 else:
                     self.ground = False
 
-        if jump and self.ground:
+        if jump == 1 and self.ground:
             self.vel_y = -10
             self.acc = 0
             self.ground = False
 
         self.vel_y += self.acc
         self.player.rect.y += self.vel_y
-        self.vel_x = 300 * dt
-
-        if right:
+        self.vel_x = 300 #* dt
+        if right == 1:
             self.player.rect.x += self.vel_x
-        if left:
+        if left == 1:
             self.player.rect.x -= self.vel_x
-        
+
         if self.player.rect.left <= 0:
             self.player.rect.x = 20
         if self.player.rect.right >= w:
@@ -140,10 +139,7 @@ class Game:
 game = Game()
 
 while True:
-    left, right, jump = Direction.update()
-    action = (left, right, jump)
-    reward, game_over, score = game.step(action)
-    if game_over:
-        game.reset()
+    #just a pointer you need to change state in geoffrey.py too i forgot to
+    score = game.step([0,0,1])
 
     pygame.display.update()
