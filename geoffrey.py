@@ -2,8 +2,8 @@ import torch
 import random
 import numpy as np
 from collections import deque
-from main import Game, point, calc_score as score,  game_over as danger
-from main import Direction, update as left, right, jump
+from main import Game, point, calc_score,  game_over as danger
+from main import Direction
 from geoffrey_brain import Q_Net, Qtrainer
 from plot import plot
 MAX_MEMORY = 100_000
@@ -26,7 +26,7 @@ class Agent:
 
     def get_state(self, game):
         cube = game.player[0]
-        
+        left, right, jump = Direction.update()
         point_l = point(cube.x - 18, cube.y)
         point_r = point(cube.x + 18, cube.y)
         
@@ -42,10 +42,11 @@ class Agent:
             jump,
             
             #calc the distance from itself and the endpoint
-            score
+            calc_score()
         ]
         return np.array(state, dtype=int)
     
+
     def remember(self, state, action, reward, next_state, done):
         # will pop left is max memory is exceeded
         self.memory.append((state, action, reward, next_state, done))
@@ -92,7 +93,7 @@ def train():
         # get move on current state
         final_move = agent.get_action(state_old)
 
-        reward, done, score = game.step(final_move)
+        reward, done, score = game.step(tuple(final_move))
 
         state_new = agent.get_state(game)
 
@@ -107,7 +108,7 @@ def train():
 
             if score > record:
                 record = score
-                agent.model.save
+                agent.model.save()
             print('Game', agent.n_games, 'Score', score, 'Record:', record)
 
             #Copied from video to test if he even works

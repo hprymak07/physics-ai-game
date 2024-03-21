@@ -61,7 +61,7 @@ class Qtrainer:
                 new_q = reward[i] + self.gamma * torch.max(self.model(next_state[i]))
             clone[i][torch.argmax(action).item()] = new_q
 
-        self.optimizer.zerograd()
-        lose = self.optimizer(clone, pred_q)
-        lose.backward()
-        self.optimzier.step()
+        self.optimizer.zero_grad()
+        loss = self.criteration(clone, pred_q)
+        loss.backward()
+        self.optimizer.step()

@@ -9,7 +9,10 @@ class Direction():
     @staticmethod
     def update():
         key = pygame.key.get_pressed()
-        return key[pygame.K_a], key[pygame.K_d], key[pygame.K_SPACE]
+        left = key[pygame.K_a] 
+        right = key[pygame.K_d]
+        jump = key[pygame.K_SPACE]
+        return left, right, jump
     
 class Player:
     def __init__(self, x=30, y=h / 2):
@@ -22,6 +25,7 @@ class Game:
         self.clock = pygame.time.Clock()
 
         self.collision_tol = 23
+        self.vel_x = 0
         self.vel_y = 0
         self.gravity = 0.5
         self.ground = False
@@ -136,7 +140,8 @@ class Game:
 game = Game()
 
 while True:
-    action = Direction.update()
+    left, right, jump = Direction.update()
+    action = (left, right, jump)
     reward, game_over, score = game.step(action)
     if game_over:
         game.reset()
