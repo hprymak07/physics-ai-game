@@ -4,7 +4,7 @@ from math import dist
 
 
 w, h = 1250, 720
-x, y = 30, h // 2
+x, y = 30, 1250 // 2
 class Direction():
     @staticmethod
     def update(left=0, right=0, jump=0):
