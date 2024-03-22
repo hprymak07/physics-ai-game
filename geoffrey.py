@@ -2,12 +2,27 @@ import torch
 import random
 import numpy as np
 from collections import deque
-from main import Game, point, calc_score,  game_over as danger
-from main import Direction
+from game import Game, Direction, Player
 from geoffrey_brain import Q_Net, Qtrainer
+from math import dist
+from collections import namedtuple
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
-LR = 0.001
+LR = 0.001      
+Point = namedtuple('Point', ['x', 'y'])
+def score(player, endpt, neg=False):
+    player_distance = [player.rect.x - (player.rect.width / 2), player.rect.y - (player.rect.height / 2)]
+    endpt_distance = [endpt.rect.x - (endpt.rect.width / 2), endpt.rect.y - (endpt.rect.height / 2)]
+    score = dist(player_distance, endpt_distance)
+    game_over = True
+
+    if neg: 
+        reward = -10 
+    else: 
+        reward = 10
+        score += 1
+
+    return reward, game_over, score
 
 # https://www.youtube.com/watch?v=L8ypSXwyBds - video
 class Agent:
@@ -22,14 +37,21 @@ class Agent:
         self.model = Q_Net(11,256,3)
         self.trainer = Qtrainer(self.model, lr = LR, gamma = self.gamma)
 
-
     def get_state(self, game):
-        cube = game.player[0]
-        left, right, jump = Direction.update()
-        point_l = point(cube.x - 18, cube.y)
-        point_r = point(cube.x + 18, cube.y)
-        print("Hi i am here")
+        cube = Player.player.rect # get player cube from Player
 
+        point_l = Point(cube.x - 18, cube.y)
+        point_r = Point(cube.x + 18, cube.y)
+        print("Hi i am here")
+        
+        danger_nearby = 1 if (cube.colliderect(game.floor) and cube.x > 200) != -1 else 0
+        danger_end = 1 if cube.colliderect(game.endpt) else 0
+
+        left, right, jump = Direction.update(left = 0, right = 0, jump = 0)
+
+
+        danger = [cube.colliderect(game.endpt), cube.colliderect(game.floor) and cube.x > 200]
+        [score(cube, game.endpt, True) for i in danger if danger[i]]
         state = [
             # locate danger
             danger[0],
@@ -41,7 +63,7 @@ class Agent:
             jump,
             
             #calc the distance from itself and the endpoint
-            calc_score()
+            score(cube, game.endpt)
         ]
         print("HELLO!")
         return np.array(state, dtype=int)
@@ -65,13 +87,13 @@ class Agent:
     def train_short_memory(self, state, action, reward, next_state, done):
         self.trainer.train_step(state, action, reward, next_state, done)  
     
-    def get_action(self, state):
-        self.epsilon = 80 - self.n_games
+    def get_action(self, state): # Using the epsilon-greedy exploration method
+        self.epsilon = max(80 - self.n_games) #makes sure the epsilon doesnt go negtive
         final_action = [0,0,0]
-        if random.randint(0,200) < self.epsilon:
+        if random.randint(0,200) < self.epsilon: # randomly choose action
             action = random.randint(0,2)
             final_action[action] = 1
-        else:
+        else: # Exploitate the highest Q-value action
             state0 = torch.tensor(state, dtype = torch.float)
             prediction = self.model(state0)
             action = torch.argmax(prediction).item()
@@ -79,42 +101,6 @@ class Agent:
         print("Final Action", final_action)
         return final_action
 #run it rq
-def train():
-    plot_scores = []
-    plot_mean_scores =[]
-    total_score = 0
-    record = 0
-    agent = Agent()
-    game = Game()
-    print("I define these")
-    while True:
-        # get old state / current
-        state_old = agent.get_state(game)
-        print("state", state_old)
 
-        # get move on current state
-        final_move = agent.get_action(state_old)
-        print("final move",final_move)
-
-    
-        reward, done, score = game.step(final_move)
-
-        state_new = agent.get_state(game)
-
-        #train short term memory
-        agent.train_short_memory(state_old, final_move, reward, state_new, done)
-        agent.remember(state_old, final_move, reward, state_new, done)
-
-        if done:
-            game.reset()
-            agent.n_games += 1
-            agent.train_long_memory()
-
-            if score > record:
-                record = score
-                agent.model.save()
-            print('Game', agent.n_games, 'Score', score, 'Record:', record)
-
-
-if __name__ == '__main__':
-    train()
+# if __name__ == '__main__':
+#     train()
