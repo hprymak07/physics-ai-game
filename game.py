@@ -11,8 +11,8 @@ class Direction():
         return left, right, jump
     
 class Player:
-    def __init__(self, x=30, y=h / 2):
-        self.rect = pygame.Rect(x, y, 10, 10)
+    def __init__(x=30, y=h / 2):
+        rect = pygame.Rect(x, y, 10, 10)
 
 class Calc_score:       
     def score(player, endpt, neg=False):

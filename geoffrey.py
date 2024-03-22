@@ -6,10 +6,13 @@ from game import Game, Direction, Player
 from geoffrey_brain import Q_Net, Qtrainer
 from math import dist
 from collections import namedtuple
+from pygame import Rect
+
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
 LR = 0.001      
 Point = namedtuple('Point', ['x', 'y'])
+
 def score(player, endpt, neg=False):
     player_distance = [player.rect.x - (player.rect.width / 2), player.rect.y - (player.rect.height / 2)]
     endpt_distance = [endpt.rect.x - (endpt.rect.width / 2), endpt.rect.y - (endpt.rect.height / 2)]
@@ -38,7 +41,7 @@ class Agent:
         self.trainer = Qtrainer(self.model, lr = LR, gamma = self.gamma)
 
     def get_state(self, game):
-        cube = Player.player.rect # get player cube from Player
+        cube = Rect(30, 720 / 2, 10, 10) # get player cube from Player
 
         point_l = Point(cube.x - 18, cube.y)
         point_r = Point(cube.x + 18, cube.y)
