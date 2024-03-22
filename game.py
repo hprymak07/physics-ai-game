@@ -4,15 +4,15 @@ from math import dist
 
 
 w, h = 1250, 720
-
+x, y = 30, h // 2
 class Direction():
     @staticmethod
     def update(left=0, right=0, jump=0):
         return left, right, jump
     
 class Player:
-    def __init__(x=30, y=h / 2):
-        rect = pygame.Rect(x, y, 10, 10)
+    def player(self, x, y):
+        self.rect = pygame.draw.rect(x, y, 10, 10)
 
 class Calc_score:       
     def score(player, endpt, neg=False):
@@ -59,7 +59,7 @@ class Game:
         ]
 
     def reset(self):
-        self.player = Player()
+        self.player = Player(x,y)
         self.score = 1
         self.frame_iteration = 0
 
