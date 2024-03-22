@@ -59,7 +59,7 @@ class Game:
         ]
 
     def reset(self):
-        self.player = Player(x,y)
+        self.player = Player()
         self.score = 1
         self.frame_iteration = 0
 
