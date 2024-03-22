@@ -11,8 +11,8 @@ class Direction():
         return left, right, jump
     
 class Player:
-    def player(self, x, y):
-        self.rect = pygame.draw.rect(x, y, 10, 10)
+    def player(self):
+        self.rect = pygame.draw.rect(0,0, 10, 10)
 
 class Calc_score:       
     def score(player, endpt, neg=False):

@@ -41,7 +41,8 @@ class Agent:
         self.trainer = Qtrainer(self.model, lr = LR, gamma = self.gamma)
 
     def get_state(self, game):
-        cube = Player().rect # get player cube from Player
+        player = Player
+        cube = player.rect # get player cube from Player
 
         point_l = Point(cube.x - 18, cube.y)
         point_r = Point(cube.x + 18, cube.y)
