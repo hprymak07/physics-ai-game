@@ -11,12 +11,11 @@ class Direction():
         return left, right, jump
     
 class Player:
-    def player(self):
-        self.rect = pygame.draw.rect(0,0, 10, 10)
+    def __init__(self,x,y):
+        self.rect = pygame.Rect(x,y, 10, 10)     
 
-class Calc_score:       
-    def score(player, endpt, neg=False):
-        player_distance = [player.x - (player.width / 2), player.rect.y - (player.rect.height / 2)]
+    def score(self, player, endpt, neg=False):
+        player_distance = [player.x - (player.width / 2), player.y - (player.height / 2)]
         endpt_distance = [endpt.x - (endpt.width / 2), endpt.y - (endpt.height / 2)]
         score = dist(player_distance, endpt_distance)
         game_over = True
@@ -34,7 +33,7 @@ class Game:
         self.display = pygame.display.set_mode((w, h))
         pygame.display.set_caption("AI Game")
         self.clock = pygame.time.Clock()
-
+        self.endpt = pygame.Rect(1200, h - 250, 20, 20)
         self.collision_tol = 23
         self.vel_x = 0
         self.vel_y = 0
@@ -59,7 +58,7 @@ class Game:
         ]
 
     def reset(self):
-        self.player = Player()
+        self.player = Player(30, 1250 // 2)
         self.score = 1
         self.frame_iteration = 0
 
@@ -80,11 +79,13 @@ class Game:
         self.move(left, right, jump)
       
         end = [self.player.rect.colliderect(self.endpt), self.player.rect.colliderect(self.floor) and self.player.rect.x > 200]
-        reward, game_over, self.score = Calc_score.score(self.player.rect, self.endpt, True in end)
+
+        reward, game_over, self.score = self.player.score(self.player.rect, self.endpt, True in end)
+
         
         self._update()
 
-        return self.score
+        return reward, game_over, self.score
 
     def move(self, left, right, jump):
 
