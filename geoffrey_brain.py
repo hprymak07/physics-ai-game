@@ -18,7 +18,6 @@ class Q_Net(nn.Module):
         x = func.relu(self.linear1(x))
   
         x = self.linear2(x)
-
         return x
     
     def save(self, file_name = 'geoffrey.pth'):

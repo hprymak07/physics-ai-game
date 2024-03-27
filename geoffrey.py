@@ -132,6 +132,7 @@ def train():
 
         state_old = agent.get_state(game)
         action = agent.get_action(state_old)
+        print("Action", action)
 
 
         reward, done, state_new = game.step(action)
@@ -146,7 +147,7 @@ def train():
             game.reset()
             agent.n_games += 1
 
-            if agent.n_games == 1000:
+            if agent.n_games > 200:
                 break
 
 

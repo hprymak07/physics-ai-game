@@ -2,7 +2,7 @@ import pygame
 from math import dist
 
 
-
+pygame.init()
 w, h = 1250, 720
 x, y = 30, 1250 // 2
 class Direction():
@@ -34,10 +34,11 @@ class Game:
         pygame.display.set_caption("AI Game")
         self.clock = pygame.time.Clock()
         self.endpt = pygame.Rect(1200, h - 250, 20, 20)
+
         self.collision_tol = 23
         self.vel_x = 0
         self.vel_y = 0
-        self.gravity = 0.5
+        self.gravity = 0.2
         self.ground = False
         self.acc = 0
 
@@ -109,6 +110,12 @@ class Game:
                     self.ground = False
                 else:
                     self.ground = False
+        if self.ground:
+            self.vel_y = 0
+        else:
+            self.vel_y += self.acc  
+            self.player.rect.y += self.vel_y  
+
 
         if jump == 1 and self.ground:
             self.vel_y = -10
@@ -129,6 +136,8 @@ class Game:
             self.player.rect.x = w - self.player.rect.width
 
     def _update(self):
+
+        
         self.display.fill('white')  
         pygame.draw.rect(self.display, (255, 0, 0), self.player.rect) 
         pygame.draw.rect(self.display, (0, 255, 0), self.endpt)  
@@ -137,3 +146,5 @@ class Game:
             pygame.draw.rect(self.display, (128, 128, 128), obj)
 
         pygame.draw.rect(self.display, (0, 0, 0), self.floor)  
+
+        pygame.display.update()
