@@ -1,32 +1,78 @@
 import pygame
 from math import dist
 
-
 pygame.init()
 w, h = 1250, 720
-x, y = 30, 1250 // 2
-class Direction():
+
+class Direction:
     @staticmethod
     def update(left=0, right=0, jump=0):
         return left, right, jump
-    
+
 class Player:
-    def __init__(self,x,y):
-        self.rect = pygame.Rect(x,y, 10, 10)     
+    def __init__(self, x, y):
+        self.rect = pygame.Rect(x, y, 10, 10)
+        self.vel_x = 0
+        self.vel_y = 0
+        self.gravity = 0.2
+        self.ground = False
+        self.collision_tol = 5
 
-    def score(self, player, endpt, neg=False):
-        player_distance = [player.x - (player.width / 2), player.y - (player.height / 2)]
-        endpt_distance = [endpt.x - (endpt.width / 2), endpt.y - (endpt.height / 2)]
-        score = dist(player_distance, endpt_distance)
-        game_over = True
+    def update_velo(self, left, right, jump):
+        self.vel_x = 300 if right == 1 else 0 if left == 1 else 0
+        self.vel_y += self.gravity
+        self.vel_y = -10 if jump == 1 else self.vel_y
+        print("Velocity X:", self.vel_x)
+        print("Velocity Y:", self.vel_y)
 
-        if neg: 
-            reward = -10 
-        else: 
-            reward = 10
-            score += 1
+    def move(self):
+        self.rect.x += self.vel_x
+        self.rect.y += self.vel_y
+        print("Player Position:", self.rect.x, self.rect.y)
 
-        return reward, game_over, score
+    def collisions(self, objects, walls):
+
+        for object in objects:
+            if self.rect.colliderect(object):
+                print("Collision detected with object:", object)
+                if abs(self.rect.right - object.left) <= self.collision_tol:
+                    self.rect.right = object.left
+                    self.ground = True
+                elif abs(self.rect.left - object.right) <= self.collision_tol:
+                    self.rect.left = object.right
+                    self.ground = True
+                elif self.rect.bottom >= object.top:
+                    self.rect.bottom = object.top
+                    self.ground = True
+                    self.vel_y = 0
+                elif self.rect.top <= object.bottom:
+                    self.rect.top = object.bottom
+                    self.ground = False
+                else:
+                    self.ground = False
+        
+        for wall in walls:
+            if self.rect.colliderect(wall):
+                print("Collision detected with wall:", wall)
+                if self.vel_x > 0:
+                    self.rect.right = wall.left
+                elif self.vel_x < 0:
+                    self.rect.left = wall.right
+
+                if self.vel_y > 0:
+                    self.rect.bottom = wall.top
+                    self.vel_y = 0
+                    self.ground = True
+                    
+                elif self.vel_y < 0:
+                    self.rect.top = wall.bottom
+                    self.vel_y = 0
+
+    def update(self, left, right, jump, objects, walls):
+        self.update_velo(left, right, jump)
+        self.move()
+        self.collisions(objects, walls)
+        print("Player position:", self.rect.x, self.rect.y)
 
 class Game:
     def __init__(self):
@@ -34,20 +80,9 @@ class Game:
         pygame.display.set_caption("AI Game")
         self.clock = pygame.time.Clock()
         self.endpt = pygame.Rect(1200, h - 250, 20, 20)
-
-        self.collision_tol = 23
-        self.vel_x = 0
-        self.vel_y = 0
-        self.gravity = 0.2
-        self.ground = False
-        self.acc = 0
-
-        self.draw_game()
-        self.reset()
-
-    def draw_game(self):
         self.floor = pygame.Rect(0, h - 20, w, 200)
-        self.endpt = pygame.Rect(1200, h - 250, 20, 20)
+        self.left_wall = pygame.Rect(0, 0, 20, h)
+        self.right_wall = pygame.Rect(w - 20, 0, 20, h)
         self.objects_for_lvl = [
             pygame.Rect(100, h - 100, 100, 80),
             pygame.Rect(250, h - 140, 100, 25),
@@ -58,12 +93,15 @@ class Game:
             pygame.Rect(1150, h - 230, 200, 25)
         ]
 
+        self.player = Player(30, 600)
+        self.running = True
+        self.reset()
+
     def reset(self):
-        self.player = Player(30, 1250 // 2)
-        self.score = 1
+        self.score = 0
         self.frame_iteration = 0
 
-    def step(self, action):      
+    def step(self, action):
         self.frame_iteration += 1
 
         for ev in pygame.event.get():
@@ -71,80 +109,51 @@ class Game:
                 pygame.quit()
                 quit()
 
-        dt = self.clock.tick(60) / 1000        
-        reward = 0
-        game_over = False
-      
         left, right, jump = action
-      
-        self.move(left, right, jump)
-      
-        end = [self.player.rect.colliderect(self.endpt), self.player.rect.colliderect(self.floor) and self.player.rect.x > 200]
+        self.player.update(left, right, jump, self.objects_for_lvl, [self.floor, self.left_wall, self.right_wall])
 
-        reward, game_over, self.score = self.player.score(self.player.rect, self.endpt, True in end)
+        reward, game_over = self.calculate_score()
 
-        
         self._update()
 
         return reward, game_over, self.score
 
-    def move(self, left, right, jump):
+    def calculate_score(self):
+        reward = 0
+        game_over = False
 
-        self.acc = self.gravity
-        list_in_use = self.objects_for_lvl + [self.floor]
+        if self.player.rect.colliderect(self.endpt):
+            reward += 10
+        elif self.player.rect.colliderect(self.floor):
+            reward -= 5
 
-        for objects in list_in_use:
-            if self.player.rect.colliderect(objects):
-                if abs(self.player.rect.right - objects.left) <= self.collision_tol:
-                    self.player.rect.right = objects.left
-                    self.ground = True
-                elif abs(self.player.rect.left - objects.right) <= self.collision_tol:
-                    self.player.rect.left = objects.right
-                    self.ground = True
-                elif self.player.rect.bottom >= objects.top:
-                    self.player.rect.bottom = objects.top
-                    self.ground = True
-                    self.vel_y = 0
-                elif self.player.rect.top <= objects.bottom:
-                    self.player.rect.top = objects.bottom
-                    self.ground = False
-                else:
-                    self.ground = False
-        if self.ground:
-            self.vel_y = 0
-        else:
-            self.vel_y += self.acc  
-            self.player.rect.y += self.vel_y  
+        self.score += reward
+        game_over = self.player.rect.colliderect(self.left_wall) or self.player.rect.colliderect(self.right_wall)
 
+        return reward, game_over
 
-        if jump == 1 and self.ground:
-            self.vel_y = -10
-            self.acc = 0
-            self.ground = False
-
-        self.vel_y += self.acc
-        self.player.rect.y += self.vel_y
-        self.vel_x = 300 #* dt
-        if right == 1:
-            self.player.rect.x += self.vel_x
-        if left == 1:
-            self.player.rect.x -= self.vel_x
-
-        if self.player.rect.left <= 0:
-            self.player.rect.x = 20
-        if self.player.rect.right >= w:
-            self.player.rect.x = w - self.player.rect.width
-
-    def _update(self):
-
-        
+    def _update(self):    
         self.display.fill('white')  
-        pygame.draw.rect(self.display, (255, 0, 0), self.player.rect) 
-        pygame.draw.rect(self.display, (0, 255, 0), self.endpt)  
 
         for obj in self.objects_for_lvl:  
             pygame.draw.rect(self.display, (128, 128, 128), obj)
 
-        pygame.draw.rect(self.display, (0, 0, 0), self.floor)  
+        pygame.draw.rect(self.display, (128, 128, 128), self.floor)  
+        pygame.draw.rect(self.display, (128, 128, 128), self.left_wall)
+        pygame.draw.rect(self.display, (128, 128, 128), self.right_wall)
+    
+        pygame.draw.rect(self.display, (255, 0, 0), self.player.rect)  # Draw player object
+        pygame.draw.rect(self.display, (0, 255, 0), self.endpt)  
 
         pygame.display.update()
+
+
+if __name__ == "__main__":
+    game = Game()
+    while game.running:
+        action = Direction.update(1, 0, 0) # move left once 
+        print("Action:", action)
+        reward, game_over, score = game.step(action)
+        if game_over:
+            print("Game Over")
+            game.running = False
