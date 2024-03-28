@@ -25,15 +25,15 @@ class Agent:
         player = game.player
         cube = player.rect
 
-        point_l = Point(cube.x - 18, cube.y)
-        point_r = Point(cube.x + 18, cube.y)
+        # point_l = Point(cube.x - 18, cube.y)
+        # point_r = Point(cube.x + 18, cube.y)
 
-        danger_nearby = 1 if cube.colliderect(game.floor) and cube.x > 200 else 0
-        danger_end = 1 if cube.colliderect(game.endpt) else 0
+        # danger_nearby = 1 if cube.colliderect(game.floor) and cube.x > 200 else 0
+        # danger_end = 1 if cube.colliderect(game.endpt) else 0
 
         left, right, jump = Direction.update(left=0, right=0, jump=0)
 
-        danger = [cube.colliderect(game.endpt), cube.colliderect(game.floor) and cube.x > 200]
+        danger = [1 if cube.colliderect(game.endpt) else 0,  1 if cube.colliderect(game.floor) and cube.x > 100 else 0]
         state = np.array([
             danger[0],
             danger[1],

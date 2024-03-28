@@ -11,17 +11,21 @@ class Direction:
 
 class Player:
     def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 10, 10)
+        self.rect = pygame.Rect(x, y + 1, 10, 10)
         self.vel_x = 0
         self.vel_y = 0
-        self.gravity = 0.2
+        self.gravity = 0.8
         self.ground = False
         self.collision_tol = 5
-
-    def update_velo(self, left, right, jump):
-        self.vel_x = 300 if right == 1 else 0 if left == 1 else 0
+    def update_velo(self, left, right, jump, objects, walls):
+        self.vel_x = 10 if right == 1 else 0 if left == 1 else 0
         self.vel_y += self.gravity
-        self.vel_y = -10 if jump == 1 else self.vel_y
+        self.ground = self.rect.colliderect(walls[0]) or any(self.rect.colliderect(obj) for obj in objects)
+
+        
+        if jump == 1 and self.ground:
+            self.vel_y = -10
+
         print("Velocity X:", self.vel_x)
         print("Velocity Y:", self.vel_y)
 
@@ -69,7 +73,7 @@ class Player:
                     self.vel_y = 0
 
     def update(self, left, right, jump, objects, walls):
-        self.update_velo(left, right, jump)
+        self.update_velo(left, right, jump, objects, walls)
         self.move()
         self.collisions(objects, walls)
         print("Player position:", self.rect.x, self.rect.y)
@@ -124,11 +128,11 @@ class Game:
 
         if self.player.rect.colliderect(self.endpt):
             reward += 10
-        elif self.player.rect.colliderect(self.floor):
+        elif self.player.rect.colliderect(self.floor) and self.player.rect.x >= 100:
             reward -= 5
 
         self.score += reward
-        game_over = self.player.rect.colliderect(self.left_wall) or self.player.rect.colliderect(self.right_wall)
+        game_over = self.player.rect.colliderect(self.left_wall) or self.player.rect.colliderect(self.floor) and self.player.rect.x >= 100
 
         return reward, game_over
 
@@ -151,7 +155,7 @@ class Game:
 if __name__ == "__main__":
     game = Game()
     while game.running:
-        action = Direction.update(1, 0, 0) # move left once 
+        action = Direction.update(0, 0, 1) # move up once 
         print("Action:", action)
         reward, game_over, score = game.step(action)
         if game_over:
