@@ -2,7 +2,7 @@ import torch
 import random
 import numpy as np
 from collections import deque
-from game import Game, Direction, Player
+from game import Game, Direction
 from geoffrey_brain import Q_Net, Qtrainer
 from collections import namedtuple
 
@@ -24,12 +24,6 @@ class Agent:
     def get_state(self, game):
         player = game.player
         cube = player.rect
-
-        # point_l = Point(cube.x - 18, cube.y)
-        # point_r = Point(cube.x + 18, cube.y)
-
-        # danger_nearby = 1 if cube.colliderect(game.floor) and cube.x > 200 else 0
-        # danger_end = 1 if cube.colliderect(game.endpt) else 0
 
         left, right, jump = Direction.update(left=0, right=0, jump=0)
 
@@ -66,7 +60,7 @@ class Agent:
     def train_short_memory(self, state_old, action, reward, next_state, done):
         self.trainer.train_step(state_old, action, reward, next_state, done)  
     
-    def get_action(self, state, player, game):
+    def get_action(self, state):
         self.epsilon = 80 - self.n_games
         final_action = [0, 0, 0]
 
@@ -91,7 +85,7 @@ class Agent:
 
         while True:
             state_old = agent.get_state(game)
-            action = agent.get_action(state_old, game.player, game)
+            action = agent.get_action(state_old)
             reward, done, state_new = game.step(action)  # Update reward from game step
             score = game.score
 
