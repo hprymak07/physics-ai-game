@@ -97,6 +97,7 @@ class Game:
         self.reset()
 
     def reset(self):
+        self.calculate_score()
         self.score = 0
         self.frame_iteration = 0
         self.player.rect.x = 30
@@ -120,13 +121,12 @@ class Game:
     def calculate_score(self):
         reward = 0
 
-        # NEED TO FIX THIS 
         distance = abs(self.player.rect.centerx - self.endpt.centerx)
-        reward = max(0, (100 - distance))
-
-        self.score += reward
+        reward = max(0, (w - distance))
+        reward += reward
 
         game_over = self.player.rect.colliderect(self.left_wall) or (self.player.rect.colliderect(self.floor) and self.player.rect.x >= 100)
+        
 
         return reward, game_over
 
@@ -140,7 +140,7 @@ class Game:
         pygame.draw.rect(self.display, (0, 255, 0), self.endpt)  
         pygame.display.update()
 
-
+# TESTING FUNCTION
 # if __name__ == "__main__":
 #     game = Game()
 #     while game.running:
